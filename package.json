@@ -1,6 +1,6 @@
 {
   "name": "illiterate",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "dependencies": {
     "lodash": "~3.4.0",
     "marked": "~0.3.3"
@@ -11,7 +11,7 @@
     "illiterate": "bin/illiterate"
   },
   "scripts": {
-    "build": "illiterate src/illiterate.js.md > lib/illiterate.js",
+    "build": "grep '^    ' src/illiterate.js.md | cut -c5- > lib/illiterate.js",
     "prepublish": "npm run build"
   },
   "repository": {
