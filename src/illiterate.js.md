@@ -37,55 +37,36 @@ Create self executing enclosure - convert function into expression by prefixing 
         var root = this,
             illiterate;
 
-Load dependencies... but how to handle this in the browser context..?
+Load dependencies... but how to handle this in the browser context..!?
 
-        var _ = require('lodash'),
-            marked = require('marked');
+            var _ = require('lodash'),
+            md = require('markdown-it')();
 
-Define main parse method, which accepts a string.
+Define main parse method, which accepts a string
 
-        illiterate = function(text){
+        illiterate = function(text) {
 
-Create a variable to store output as it is built up from input files, set the target to default (where content without specified files is attached) and markdown lexer results.
+Create a variable to store output as it is built up from input files
 
-            var out = { default: [] },
-                target = 'default',
-                // from marked.js Inline-Level Grammar...
-                srcPattern = /^\[((?:\[[^\]]*\]|[^\[\]]|\](?=[^\[]*\]))*)\]\s*\[src:\/\/([^\]]*)\]/,
-                m,
-                lexed = marked.lexer(text, {});
+            var out = [];
 
 ### Main loop
 
-Pass the input text through a markdown parser, then reduce the tokens to extract only code blocks, joining with newlines, and pushing onto the output array.
+We only want to extract code blocks, so remove other rules, and override `code_block` rule
 
-            _.each(lexed, function(item){
-                if(!!item.text && item.text[0] === '[' && (m = item.text.match(srcPattern))) {
-                    target = m[2];
-                    out[target] = out[target] || [];
+            md.renderer.rules = {
+                code_block: function (tokens, idx) {
+                    out.push(tokens[idx].content)
                 }
-                if(item.type === 'code'){
-                    target && out[target].push(item.text);
-                }
-            });
+            }
 
-Post process main loop.
+Run the render method, which will callback the `code_block` rule for each extracted block of code
 
-            var defaultOut = out.default;
-            delete out.default;
-            var outArr = _.map(out, function(val, key){
-                return {
-                    filename: lexed.links['src://'+key].href,
-                    content: val.join('\n')
-                };
-            });
-            outArr.default = defaultOut.join('\n');
-
-### Output
+            md.render(text)
 
 Output extracted code blocks
 
-            return outArr;
+            return out.join('');
 
         };
 

@@ -1,9 +1,9 @@
 {
   "name": "illiterate",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "dependencies": {
     "lodash": "~3.4.0",
-    "marked": "~0.3.3"
+    "markdown-it": "^8.3.1"
   },
   "description": "Extract code block from markdown à la coffeescript - but for any language",
   "main": "lib/illiterate.js",
