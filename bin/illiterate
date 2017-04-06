@@ -8,5 +8,5 @@ var path = require('path'),
 process.argv.slice(2).forEach(function (filename) {
   var file_contents = fs.readFileSync(filename).toString('UTF-8')
     // TODO: specify output file to return, or folder to output all files into
-  console.log(illiterate(file_contents))
+  console.log(illiterate(file_contents, filename))
 })

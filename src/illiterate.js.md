@@ -34,6 +34,8 @@ Create self executing enclosure - convert function into expression by prefixing 
 
     !function(){
 
+        var sm = require('source-map')
+
         var root = this,
             illiterate;
 
@@ -44,11 +46,15 @@ Load dependencies... but how to handle this in the browser context..!?
 
 Define main parse method, which accepts a string
 
-        illiterate = function(text) {
+        illiterate = function(text, filename) {
 
 Create a variable to store output as it is built up from input files
 
-            var out = [];
+            var out = [],
+                // https://www.html5rocks.com/en/tutorials/developertools/sourcemaps/
+                sourcemap = new sm.SourceMapGenerator({
+                  file: 'input-file'
+                });
 
 ### Main loop
 
@@ -56,7 +62,23 @@ We only want to extract code blocks, so remove other rules, and override `code_b
 
             md.renderer.rules = {
                 code_block: function (tokens, idx) {
-                    out.push(tokens[idx].content)
+                    var rows = tokens[idx].map
+                    tokens[idx].content.split('\n').map(function(line, index){
+                        var line_number = rows[0] + index + 1
+                        out.push(line)
+                        sourcemap.addMapping({
+                          generated: {
+                            line: out.length,
+                            column: null
+                          },
+                          source: 'input-file',
+                          original: {
+                            line: line_number,
+                            column: null
+                          },
+                          name: null
+                        });
+                    })
                 }
             }
 
@@ -65,8 +87,10 @@ Run the render method, which will callback the `code_block` rule for each extrac
             md.render(text)
 
 Output extracted code blocks
-
-            return out.join('');
+    
+            // http://stackoverflow.com/a/6182519/665261
+            var sourcemap_datauri = 'data:application/json;charset=utf-8;base64,' + new Buffer(sourcemap.toString()).toString('base64')
+            return out.join('\n') + '\n//# sourceMappingURL=' + sourcemap_datauri + '\n//# sourceURL=' + filename;
 
         };
 
